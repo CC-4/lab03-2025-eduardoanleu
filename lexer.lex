@@ -6,16 +6,15 @@
     En este archivo ustedes tienen que crear un lexer que sea capaz de reconocer
     los tokens de la siguiente gramática:
 
-    S ::= E;
-    E ::= E + E
-        | E - E
-        | E * E
-        | E / E
-        | E % E
-        | E ^ E
-        | - E
-        | (E)
-        | number
+    S ::= E ;
+    E ::= T E'
+    E' ::= + T E' | - T E' | ε
+    T ::= F T'  
+    T' ::= * F T' | / F T' | % F T' | ε
+    F ::= U F'
+    F' ::= ^ U F' | ε
+    U ::= ~ U | P
+    P ::= ( E ) | number
 
     **** Cosas Importantes ****:
 
@@ -82,14 +81,38 @@ import java.io.IOException;
 %function nextToken
 %type Token
 
-SEMI = ";" // Definan aqui sus Tokens/ER por ejemplo: "el token SEMI"
-WHITE = (" "|\t|\n)
+SEMI = ";"
+PLUS = "+"
+MINUS = "-"
+UNARY = "~"
+MULT = "*"
+DIV = "/"
+MOD = "%"
+EXP = "^"
+LPAREN = "("
+RPAREN = ")"
+
+DIGITOS = [0-9]
+SIGNO = [+-]
+PUNTO = "."
+EXPONENTE = [eE]
+
+NUMBER = {DIGITOS}+(({PUNTO}?{DIGITOS}*)?)(({EXPONENTE}{SIGNO}?{DIGITOS}+)?)
+
+WSPACE = (" "|\t|\n|\r)
 
 %%
 
-<YYINITIAL>{SEMI}   { return new Token(Token.SEMI);   }
-
-<YYINITIAL>{WHITE}  { /* NO HACER NADA */             }
-
-<YYINITIAL>.        { return new Token(Token.ERROR);
-                      /* todo lo demas es ERROR */ }
+<YYINITIAL>{SEMI}   { return new Token(Token.SEMI);             }
+<YYINITIAL>{PLUS}   { return new Token(Token.PLUS);             }
+<YYINITIAL>{MINUS}  { return new Token(Token.MINUS);            }
+<YYINITIAL>{UNARY}  { return new Token(Token.UNARY);            }
+<YYINITIAL>{MULT}   { return new Token(Token.MULT);             }
+<YYINITIAL>{DIV}    { return new Token(Token.DIV);              }
+<YYINITIAL>{MOD}    { return new Token(Token.MOD);              }
+<YYINITIAL>{EXP}    { return new Token(Token.EXP);              }
+<YYINITIAL>{LPAREN} { return new Token(Token.LPAREN);           }
+<YYINITIAL>{RPAREN} { return new Token(Token.RPAREN);           }
+<YYINITIAL>{NUMBER} { return new Token(Token.NUMBER, yytext()); }
+<YYINITIAL>{WSPACE} {                                           }
+<YYINITIAL>.        { return new Token(Token.ERROR);            }
